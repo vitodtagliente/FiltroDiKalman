@@ -10,20 +10,20 @@ namespace KalmanServer
     {
         static ConsoleColor defaultColor;
 
+        static readonly int DefaultPort = 55655;
+
         static void Main(string[] args)
         {
             Console.Title = "Kalman Server";
 
             defaultColor = Console.ForegroundColor;
 
-            LogLine("Configuration...", ConsoleColor.Cyan);
+            LogLine("Configuration...", ConsoleColor.DarkCyan);
 
             Console.WriteLine(string.Empty);
 
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-
             int port = 0;
-            Console.WriteLine("Receiver Port [default " + NetHost.DefaultPort.ToString() + "]: ");
+            Log("Receiver Port [default " + DefaultPort.ToString() + "]: ", ConsoleColor.DarkMagenta);
             string _port = Console.ReadLine();
             if (!string.IsNullOrEmpty(_port))
             {
@@ -37,14 +37,26 @@ namespace KalmanServer
                     throw new Exception(e.ToString());
                 }
             }
-            else port = NetHost.DefaultPort;
+            else port = DefaultPort;
 
             Console.WriteLine(string.Empty);
 
-            NetHost server = new NetHost(string.Empty, port);
-            server.Init();
+            UdpClient server = new UdpClient(port);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
 
+            LogLine("Listening...", ConsoleColor.Cyan);
+            Console.WriteLine(string.Empty);
 
+            while(true)
+            {
+                byte[] bytes = server.Receive(ref endPoint);
+
+                Console.WriteLine("Received packet from {0} : {1}",
+                    endPoint.ToString(),
+                    Encoding.ASCII.GetString(bytes, 0, bytes.Length));
+            }
+
+            Console.ReadKey();
         }
 
         static void Log(string text, ConsoleColor color)

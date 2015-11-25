@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net;
+using System.Net.Sockets;
 using System.Text;
 using KalmanLib;
 
@@ -6,6 +8,9 @@ namespace KalmanClient
 {
     class Program
     {
+        static readonly string DefaultAddress = "127.0.0.1";
+        static readonly int DefaultPort = 55655;
+
         static ConsoleColor defaultColor;
 
         static void Main(string[] args)
@@ -14,21 +19,17 @@ namespace KalmanClient
 
             defaultColor = Console.ForegroundColor;
 
-            LogLine("Configuration...", ConsoleColor.Cyan);
+            LogLine("Configuration...", ConsoleColor.DarkCyan);
 
             Console.WriteLine(string.Empty);
-
-            Console.ForegroundColor = ConsoleColor.DarkMagenta;
-
+            
             string ip = string.Empty;
-            Console.Write("Receiver IP [default " + NetHost.DefaultAddress + "]: ");
+            Log("Receiver IP [default " + DefaultAddress + "]: ", ConsoleColor.DarkMagenta);
             ip = Console.ReadLine();
-            if (string.IsNullOrEmpty(ip)) ip = NetHost.DefaultAddress;
-
-            Console.WriteLine(string.Empty);
-
+            if (string.IsNullOrEmpty(ip)) ip = DefaultAddress;
+            
             int port = 0;
-            Console.WriteLine("Receiver Port [default " + NetHost.DefaultPort.ToString() + "]: ");
+            Log("Receiver Port [default " + DefaultPort.ToString() + "]: ", ConsoleColor.DarkMagenta);
             string _port = Console.ReadLine();
             if (!string.IsNullOrEmpty(_port))
             {
@@ -42,17 +43,60 @@ namespace KalmanClient
                     throw new Exception(e.ToString());
                 }
             }
-            else port = NetHost.DefaultPort;
+            else port = DefaultPort;
 
             Console.WriteLine(string.Empty);
 
-            NetHost client = new NetHost(ip, port);
-            client.Init();
+            Socket s = new Socket(AddressFamily.InterNetwork, SocketType.Dgram,
+            ProtocolType.Udp);
 
-            PacketGenerationService service;
+            IPAddress Address = IPAddress.Parse(ip);
+            IPEndPoint endPoint = new IPEndPoint(Address, port);
+            
+            int duration = 0;
+            Log("Send Duration [default 10 seconds]: ", ConsoleColor.DarkGreen);
+            string _duration = Console.ReadLine();
+            if (!string.IsNullOrEmpty(_duration))
+            {
+                try
+                {
+                    duration = int.Parse(_duration);
+                }
+                catch (Exception e)
+                {
+                    LogLine("Invalid format, duration must be an integer number!", ConsoleColor.DarkRed);
+                    throw new Exception(e.ToString());
+                }
+            }
+            else duration = 10;
 
-            client.Send(Encoding.ASCII.GetBytes("ciao"));
+            int delay = 0;
+            Log("Delay [default 1 second]: ", ConsoleColor.DarkGreen);
+            string _delay = Console.ReadLine();
+            if (!string.IsNullOrEmpty(_delay))
+            {
+                try
+                {
+                    delay = int.Parse(_delay);
+                }
+                catch (Exception e)
+                {
+                    LogLine("Invalid format, delay must be an integer number!", ConsoleColor.DarkRed);
+                    throw new Exception(e.ToString());
+                }
+            }
+            else delay = 1;
 
+            PacketGenerationService sineService = new SineGenerationService();
+            StressSendService sendService = new StressSendService(s, endPoint, sineService);
+
+            Console.WriteLine(string.Empty);
+            LogLine("Sending data...", ConsoleColor.DarkCyan);
+
+            sendService.Start(duration, delay);
+
+            Console.WriteLine(string.Empty);
+            Console.WriteLine("Press a key to quit...");
             Console.ReadKey();
         }
 
