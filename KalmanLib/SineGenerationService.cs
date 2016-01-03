@@ -15,7 +15,7 @@ namespace KalmanLib
         int time;
 
         public SineGenerationService(float angularFrequency = 1f)
-            : this(10, angularFrequency, 0)
+            : this(32, angularFrequency, 0)
         {
 
         }
@@ -40,7 +40,7 @@ namespace KalmanLib
         public override byte[] Generate()
         {
             List<byte> buffer = new List<byte>();
-            buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.ToString("HH:mm:ss")));
+            buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.TimeOfDay.ToString()));
             Random random = new Random();
             int size = Sine();
             if (size < 0) size *= -1;

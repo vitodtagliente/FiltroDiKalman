@@ -59,7 +59,7 @@ namespace KalmanLib
             {
                 // first step
                 lastPacketReceivedTime = DateTime.Now;
-                lastPacketSendTime = DateTime.Parse(packet.Substring(0, 8));
+                lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
                 lastPacketSize = bytes.Length;
 
                 firstStep = false;
@@ -76,14 +76,16 @@ namespace KalmanLib
             // Delta tempo di arrivo - Delta tempo di invio
 
             // determina t(i+1)
-            var tiplus1 = DateTime.Parse(packet.Substring(0, 8));
-
-            int Deltatplus1 = DateTimeToInt(tiplus1.Subtract(lastPacketSendTime));
-            Log("(t(i+1) - t(i)) = (" + tiplus1.ToString("HH:mm:ss") + " - " + lastPacketSendTime.ToString("HH:mm:ss") + ") = ", ConsoleColor.Magenta);
+            var tiplus1 = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
+            
+            double Deltatplus1 = tiplus1.Subtract(lastPacketSendTime).TotalMilliseconds;
+            Log("(t(i+1) - t(i)) = (" + tiplus1.TimeOfDay.ToString() + " - " + lastPacketSendTime.TimeOfDay.ToString() + ") = ", ConsoleColor.Magenta);
             LogLine(Deltatplus1.ToString(), ConsoleColor.White);
-            int DeltaTplus1 = DateTimeToInt(DateTime.Now.Subtract(lastPacketReceivedTime));
-            Log("(T(i+1) - T(i)) = (" + DateTime.Now.ToString("HH:mm:ss") + " - " + lastPacketReceivedTime.ToString("HH:mm:ss") + ") = ", ConsoleColor.Magenta);
+
+            double DeltaTplus1 = DateTime.Now.Subtract(lastPacketReceivedTime).TotalMilliseconds;
+            Log("(T(i+1) - T(i)) = (" + DateTime.Now.TimeOfDay.ToString() + " - " + lastPacketReceivedTime.TimeOfDay.ToString() + ") = ", ConsoleColor.Magenta);
             LogLine(DeltaTplus1.ToString(), ConsoleColor.White);
+
             dm = DeltaTplus1 - Deltatplus1;
             Log("dm = ", ConsoleColor.Magenta);
             LogLine(dm.ToString(), ConsoleColor.White);
@@ -93,9 +95,9 @@ namespace KalmanLib
             // H = [Delta L 1]
             DoubleMatrix H = new DoubleMatrix(new double[,] { { DeltaL, 1 } });
             // PH = P * H(prodotto tra matrici)
-            var PH = H * P; // ? nn si puo fare P * H
+            var PH = H * P; // ????????? nn si puo fare P * H
             // residuo = dm - 1/C*H(0) - m
-            double residuo = dm - 1 / (C * DeltaL - m);
+            double residuo = dm - 1 / (C * H[0, 0] - m);
             // sigma = β * sigma + (1 − β)*residuo ^ 2(β = 0, 95)
             sigma = beta * sigma + (1 - beta) * (Math.Pow(residuo, 2));
             // denominatore = sigma + H(0)*PH(0)+ H(1)*PH(1)
@@ -104,8 +106,8 @@ namespace KalmanLib
             var K = (PH / denominatore).Transposed;
             // IKH = [ 1.0 - K(0)*H(0), -K(0)*H(1); -K(1)*H(0), 1.0 - K(1)*H(1) ] (matrice 2x2)
             var IKH = new DoubleMatrix(new double[,] {
-                { 1.0 - K[0,0]*H[0,0], -K[0,0]*H[1, 0] },
-                { -K[0,1]*H[0,0], 1.0 - K[0, 1]*H[1, 0] }
+                { 1.0 - K[0, 0] * H[0, 0], -K[0, 0] * H[1, 0] },
+                { -K[0, 1] * H[0, 0], 1.0 - K[0, 1] * H[1, 0] }
             });
             // P = IKH * P (prodotto tra matrici)
             P = IKH * P;

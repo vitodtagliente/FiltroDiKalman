@@ -81,6 +81,8 @@ namespace KalmanServer
 
                 string packet = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
 
+                Console.WriteLine(string.Empty);
+
                 Console.WriteLine("Received packet from {0} : {1}",
                     endPoint.ToString(),
                     packet);
