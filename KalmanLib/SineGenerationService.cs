@@ -40,7 +40,7 @@ namespace KalmanLib
         public override byte[] Generate()
         {
             List<byte> buffer = new List<byte>();
-            buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.ToString()));
+            buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.ToString("HH:mm:ss")));
             Random random = new Random();
             int size = Sine();
             if (size < 0) size *= -1;
