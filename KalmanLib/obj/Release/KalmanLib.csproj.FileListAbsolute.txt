@@ -1,0 +1,4 @@
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\KalmanLib.dll
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\KalmanLib.pdb
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanLib\obj\Release\KalmanLib.dll
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanLib\obj\Release\KalmanLib.pdb

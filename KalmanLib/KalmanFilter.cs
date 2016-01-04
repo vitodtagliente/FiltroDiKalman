@@ -124,16 +124,7 @@ namespace KalmanLib
             Log("   Estimated 1/C = ", ConsoleColor.Yellow);
             LogLine(InverseC.ToString(), ConsoleColor.White);
         }
-
-        int DateTimeToInt(TimeSpan time)
-        {
-            int seconds = 0;
-            seconds += time.Hours;
-            seconds += time.Minutes;
-            seconds += time.Seconds;
-            return seconds;
-        }
-
+        
         void Log(string text, ConsoleColor color)
         {
             var startColor = Console.ForegroundColor;

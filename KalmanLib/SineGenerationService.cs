@@ -14,8 +14,8 @@ namespace KalmanLib
 
         int time;
 
-        public SineGenerationService(float angularFrequency = 1f)
-            : this(32, angularFrequency, 0)
+        public SineGenerationService(int amplitude = 32)
+            : this(amplitude, 1f, 0)
         {
 
         }

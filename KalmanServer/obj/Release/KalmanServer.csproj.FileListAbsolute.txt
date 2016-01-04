@@ -1,0 +1,6 @@
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\KalmanServer.exe.config
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\KalmanServer.exe
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\KalmanServer.pdb
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanServer\obj\Release\KalmanServer.csprojResolveAssemblyReference.cache
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanServer\obj\Release\KalmanServer.exe
+D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanServer\obj\Release\KalmanServer.pdb

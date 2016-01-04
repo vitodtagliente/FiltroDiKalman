@@ -87,7 +87,15 @@ namespace KalmanClient
             }
             else delay = 1;
 
-            PacketGenerationService sineService = new SineGenerationService();
+            int amplitude = 32;
+            Log("Amplitude [default 32 bit]: ", ConsoleColor.DarkGreen);
+            string _amplitude = Console.ReadLine();
+            if (!string.IsNullOrEmpty(_amplitude))
+            {
+                amplitude = int.Parse(_amplitude);
+            }
+
+            PacketGenerationService sineService = new SineGenerationService(amplitude);
             StressSendService sendService = new StressSendService(s, endPoint, sineService);
 
             Console.WriteLine(string.Empty);
