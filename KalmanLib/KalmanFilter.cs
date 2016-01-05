@@ -49,6 +49,8 @@ namespace KalmanLib
             m = 0;
             InverseC = 0;
             lastPacketSize = 0;
+
+            InverseC = 1 / C;
         }
 
         public void NextStep(byte[] bytes)
@@ -61,8 +63,6 @@ namespace KalmanLib
                 lastPacketReceivedTime = DateTime.Now;
                 lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
                 lastPacketSize = bytes.Length;
-
-                InverseC = 1 / C;
 
                 firstStep = false;
                 return;
@@ -89,7 +89,7 @@ namespace KalmanLib
             LogLine(DeltaTplus1.ToString(), ConsoleColor.White);
 
             dm = DeltaTplus1 - Deltatplus1;
-            Log("dm = ", ConsoleColor.Magenta);
+            Log("dm = DeltaT(i+1) - Deltat(i+1) = ", ConsoleColor.Magenta);
             LogLine(dm.ToString(), ConsoleColor.White);
 
             // Aggiornamento di P = P + Q
@@ -121,6 +121,7 @@ namespace KalmanLib
 
         public void LogResults(ConsoleColor color)
         {
+            Console.WriteLine(string.Empty);
             Log("   Estimated m = ", ConsoleColor.Yellow);
             LogLine(m.ToString(), ConsoleColor.White);
             Log("   Estimated 1/C = ", ConsoleColor.Yellow);
