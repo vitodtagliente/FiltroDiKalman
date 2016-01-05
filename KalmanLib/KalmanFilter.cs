@@ -62,6 +62,8 @@ namespace KalmanLib
                 lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
                 lastPacketSize = bytes.Length;
 
+                InverseC = 1 / C;
+
                 firstStep = false;
                 return;
             }
@@ -114,7 +116,7 @@ namespace KalmanLib
             // m = m + K(1) * residuo (nuova stima di m da loggare)
             m = m + K[0, 1] * residuo;
             // 1/C = 1/C + K(0) * residuo (nuova stima di C da loggare)
-            InverseC = 1 / C + K[0, 0] * residuo;
+            InverseC = InverseC + K[0, 0] * residuo;
         }
 
         public void LogResults(ConsoleColor color)
