@@ -75,10 +75,11 @@ namespace KalmanServer
             LogLine(H.ToString(), ConsoleColor.Red);
             LogLine(H[0, 0].ToString(), ConsoleColor.Red);
             */
+            
             while (true)
             {
                 byte[] bytes = server.Receive(ref endPoint);
-
+                
                 string packet = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
 
                 Console.WriteLine(string.Empty);
@@ -89,11 +90,11 @@ namespace KalmanServer
 
                 filter.NextStep(bytes);
                 filter.LogResults(ConsoleColor.Yellow);
-            }
+            }            
 
             Console.ReadKey();
         }
-
+        
         static void Log(string text, ConsoleColor color)
         {
             Console.ForegroundColor = color;
