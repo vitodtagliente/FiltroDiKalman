@@ -99,7 +99,7 @@ namespace KalmanLib
             // PH = P * H(prodotto tra matrici)
             var PH = H * P; // ????????? nn si puo fare P * H
             // residuo = dm - 1/C*H(0) - m
-            double residuo = dm - 1 / (C * H[0, 0]) - m;
+            double residuo = dm - InverseC * H[0, 0] - m;
             // sigma = β * sigma + (1 − β)*residuo ^ 2(β = 0, 95)
             sigma = beta * sigma + (1 - beta) * (Math.Pow(residuo, 2));
             // denominatore = sigma + H(0)*PH(0)+ H(1)*PH(1)
