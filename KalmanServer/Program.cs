@@ -48,7 +48,7 @@ namespace KalmanServer
                        
             var filter = new KalmanFilter();
 
-            Log("Bandwidth C [default " + filter.C.ToString() + "]: ", ConsoleColor.Green);
+            Log("Bandwidth C [default " + filter.C.ToString() + " kbps]: ", ConsoleColor.Green);
             string _cCanale = Console.ReadLine();
             if (!string.IsNullOrEmpty(_cCanale))
             {

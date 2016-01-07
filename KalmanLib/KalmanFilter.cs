@@ -23,7 +23,7 @@ namespace KalmanLib
         // One way delay variation misurato
         public double dm { get; private set; }
 
-        // Capacità del canale
+        // Capacità del canale in kbps
         public double C = 512;
 
         public double InverseC { get; private set; }
@@ -96,16 +96,16 @@ namespace KalmanLib
             P = P + Q;
             // H = [Delta L 1]
             DoubleMatrix H = new DoubleMatrix(new double[,] { { DeltaL, 1 } });
-            // PH = P * H(prodotto tra matrici)
-            var PH = H * P; // ????????? nn si puo fare P * H
+            // PH = P * H' (prodotto tra matrici)
+            var PH = P * H.Transposed;
             // residuo = dm - 1/C*H(0) - m
             double residuo = dm - InverseC * H[0, 0] - m;
             // sigma = β * sigma + (1 − β)*residuo ^ 2(β = 0, 95)
             sigma = beta * sigma + (1 - beta) * (Math.Pow(residuo, 2));
             // denominatore = sigma + H(0)*PH(0)+ H(1)*PH(1)
-            var denominatore = sigma + H[0, 0] * PH[0, 0] + H[1, 0] * PH[1, 0];
+            var denominatore = sigma + H[0, 0] * PH[0, 0] + H[1, 0] * PH[0, 1];
             // K = [ PH(0)/ denominatore; PH(1)/ denominatore] (kalman gain) (vettore 2x1)
-            var K = (PH / denominatore).Transposed;
+            var K = (PH / denominatore);
             // IKH = [ 1.0 - K(0)*H(0), -K(0)*H(1); -K(1)*H(0), 1.0 - K(1)*H(1) ] (matrice 2x2)
             var IKH = new DoubleMatrix(new double[,] {
                 { 1.0 - K[0, 0] * H[0, 0], -K[0, 0] * H[1, 0] },
