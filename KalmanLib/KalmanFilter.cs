@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,6 +11,8 @@ namespace KalmanLib
 {
     public class KalmanFilter
     {
+        public static string Filename = "server.log.txt";
+
         // Cofigurazioni iniziali del filtro definite dalla traccia
         public DoubleMatrix P = new DoubleMatrix(new double[,] { { 1000, 0 }, { 0, Math.Pow(10, -1) } });
         public DoubleMatrix Q = new DoubleMatrix(new double[,] { { Math.Pow(10, -10), 0 }, { 0, Math.Pow(10, -3) } });
@@ -51,6 +54,10 @@ namespace KalmanLib
             lastPacketSize = 0;
 
             InverseC = 1 / C;
+
+            StreamWriter wr = new StreamWriter(Filename);
+            wr.Close();
+            wr.Dispose();
         }
 
         public void NextStep(byte[] bytes)
@@ -63,6 +70,8 @@ namespace KalmanLib
                 lastPacketReceivedTime = DateTime.Now;
                 lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
                 lastPacketSize = bytes.Length;
+
+                FileLogLine("timestamp|dim(packet)|DeltaL|dm|K|P|sigma|m|C");
 
                 firstStep = false;
                 return;
@@ -117,17 +126,53 @@ namespace KalmanLib
             m = m + K[0, 1] * residuo;
             // 1/C = 1/C + K(0) * residuo (nuova stima di C da loggare)
             InverseC = InverseC + K[0, 0] * residuo;
-        }
 
+            // aggiornamento dei dati del filtro
+            lastPacketReceivedTime = DateTime.Now;
+            lastPacketSendTime = tiplus1;
+            lastPacketSize = bytes.Length;
+
+            // Log su file
+            StringBuilder line = new StringBuilder();
+
+            line.Append(DateTime.Now.ToString("HH:mm:ss"));
+            line.Append("|\t");
+            line.Append(bytes.Length);
+            line.Append("|\t");
+            line.Append(DeltaL);
+            line.Append("|\t");
+            line.Append(dm);
+            line.Append("|\t");
+            line.Append(K[0, 0]);
+            line.Append(" ");
+            line.Append(K[0, 1]);
+            line.Append("|\t");
+            line.Append(P[0, 0]);
+            line.Append(" ");
+            line.Append(P[1, 0]);
+            line.Append(" ");
+            line.Append(P[0, 1]);
+            line.Append(" ");
+            line.Append(P[1, 1]);
+            line.Append("|\t");
+            line.Append(sigma);
+            line.Append("|\t");
+            line.Append(m);
+            line.Append("|\t");
+            line.Append(Math.Pow(InverseC, -1));
+
+            FileLogLine(line.ToString());
+        }
+        
         public void LogResults(ConsoleColor color)
         {
-            Console.WriteLine(string.Empty);
-            Log("   Estimated m = ", ConsoleColor.Yellow);
+            LogLine(string.Empty);
+            Log("Estimated m = ", ConsoleColor.Yellow);
             LogLine(m.ToString(), ConsoleColor.White);
-            Log("   Estimated 1/C = ", ConsoleColor.Yellow);
+            Log("Estimated 1/C = ", ConsoleColor.Yellow);
             LogLine(InverseC.ToString(), ConsoleColor.White);
-            Console.WriteLine(string.Empty);
-            Log("   Enstimated C = ", ConsoleColor.Cyan);
+            LogLine(string.Empty);
+            Log("Enstimated C = ", ConsoleColor.Cyan);
             LogLine(Math.Pow(InverseC, -1).ToString(), ConsoleColor.White);
         }
         
@@ -137,6 +182,7 @@ namespace KalmanLib
             Console.ForegroundColor = color;
             Console.Write(text);
             Console.ForegroundColor = startColor;
+
         }
 
         void LogLine(string text, ConsoleColor color)
@@ -145,6 +191,28 @@ namespace KalmanLib
             Console.ForegroundColor = color;
             Console.WriteLine(text);
             Console.ForegroundColor = startColor;
+
         }
+
+        void LogLine(string text)
+        {
+            Console.WriteLine(text);
+        }
+
+        void FileLog(string text)
+        {
+            StreamWriter wr = new StreamWriter(Filename, true);
+            wr.Write(text);
+            wr.Close();
+            wr.Dispose();
+        }
+        void FileLogLine(string text)
+        {
+            StreamWriter wr = new StreamWriter(Filename, true);
+            wr.WriteLine(text);
+            wr.Close();
+            wr.Dispose();
+        }
+
     }
 }

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -10,13 +11,13 @@ namespace KalmanClient
     {
         static readonly string DefaultAddress = "127.0.0.1";
         static readonly int DefaultPort = 55655;
-
+        
         static ConsoleColor defaultColor;
 
         static void Main(string[] args)
         {
             Console.Title = "Kalman Client";
-
+            
             defaultColor = Console.ForegroundColor;
 
             LogLine("Configuration...", ConsoleColor.DarkCyan);
@@ -71,7 +72,7 @@ namespace KalmanClient
             else duration = 10;
 
             int delay = 0;
-            Log("Delay [default 1 second]: ", ConsoleColor.DarkGreen);
+            Log("Delay [default 1000 milli seconds ( = 1 second)]: ", ConsoleColor.DarkGreen);
             string _delay = Console.ReadLine();
             if (!string.IsNullOrEmpty(_delay))
             {
@@ -85,7 +86,7 @@ namespace KalmanClient
                     throw new Exception(e.ToString());
                 }
             }
-            else delay = 1;
+            else delay = 1000;
 
             int amplitude = 32;
             Log("Amplitude [default 32 bit]: ", ConsoleColor.DarkGreen);

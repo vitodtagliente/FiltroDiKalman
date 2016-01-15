@@ -5,6 +5,7 @@ using System.Text;
 using KalmanLib;
 using LinearAlgebra;
 using LinearAlgebra.Matricies;
+using System.Threading;
 
 namespace KalmanServer
 {
@@ -14,10 +15,18 @@ namespace KalmanServer
 
         static readonly int DefaultPort = 55655;
 
+        public static bool running = false;
+
+        static KalmanFilter filter;
+
+        static IPEndPoint endPoint;
+
+        static UdpClient server;
+
         static void Main(string[] args)
         {
             Console.Title = "Kalman Server";
-
+            
             defaultColor = Console.ForegroundColor;
 
             LogLine("Configuration...", ConsoleColor.DarkCyan);
@@ -43,10 +52,10 @@ namespace KalmanServer
 
             Console.WriteLine(string.Empty);
 
-            UdpClient server = new UdpClient(port);
-            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
+            server = new UdpClient(port);
+            endPoint = new IPEndPoint(IPAddress.Any, port);
                        
-            var filter = new KalmanFilter();
+            filter = new KalmanFilter();
 
             Log("Bandwidth C [default " + filter.C.ToString() + " kbps]: ", ConsoleColor.Green);
             string _cCanale = Console.ReadLine();
@@ -55,9 +64,9 @@ namespace KalmanServer
                 filter.C = float.Parse(_cCanale);
             }
 
-            Console.WriteLine(string.Empty);
+            LogLine(string.Empty);
             LogLine("Kalman Filter settings at time t=0", ConsoleColor.DarkGreen);
-            Console.WriteLine(string.Empty);
+            LogLine(string.Empty);
             LogLine("  P: ", ConsoleColor.DarkGreen);
             LogLine(filter.P.ToString(), ConsoleColor.White);
             LogLine("  Q: ", ConsoleColor.DarkGreen);
@@ -67,19 +76,19 @@ namespace KalmanServer
             Log("  sigma (measurement error): ", ConsoleColor.DarkGreen);
             LogLine(filter.sigma.ToString(), ConsoleColor.White);
 
-            Console.WriteLine(string.Empty);
+            LogLine(string.Empty);
             LogLine("Listening...", ConsoleColor.Cyan);
-            Console.WriteLine(string.Empty);
+            LogLine(string.Empty);
             /*
             DoubleMatrix H = new DoubleMatrix(new double[,] { { 56, 1 } });
             LogLine(H.ToString(), ConsoleColor.Red);
             LogLine(H[0, 0].ToString(), ConsoleColor.Red);
             */
             
-            while (true)
+            while(true)
             {
                 byte[] bytes = server.Receive(ref endPoint);
-                
+
                 string packet = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
 
                 Console.WriteLine(string.Empty);
@@ -90,11 +99,9 @@ namespace KalmanServer
 
                 filter.NextStep(bytes);
                 filter.LogResults(ConsoleColor.Yellow);
-            }            
-
-            Console.ReadKey();
-        }
-        
+            }
+        }        
+                
         static void Log(string text, ConsoleColor color)
         {
             Console.ForegroundColor = color;
@@ -107,6 +114,11 @@ namespace KalmanServer
             Console.ForegroundColor = color;
             Console.WriteLine(text);
             Console.ForegroundColor = defaultColor;
+        }
+
+        static void LogLine(string text)
+        {
+            Console.WriteLine(text);
         }
     }
 }

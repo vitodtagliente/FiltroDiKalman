@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
@@ -18,6 +19,8 @@ namespace KalmanLib
 
         public int Rate { get; private set; }
         public int Duration { get; private set; }
+        
+        static string Filename = "client.log.txt";
 
         public StressSendService(Socket socket, EndPoint endPoint, PacketGenerationService service)
         {
@@ -28,15 +31,19 @@ namespace KalmanLib
             EndOfStream = false;
         }
 
-        public virtual void Start(int duration, int rate = 1)
+        public virtual void Start(int duration, int rate = 1000)
         {
+            var log = new StreamWriter(Filename);
+
             Duration = duration;
             Rate = rate;
 
             var now = DateTime.Now;
             var end = now.AddSeconds(Duration);
 
-            var next = now.AddSeconds(Rate);
+            var next = now.AddMilliseconds(Rate);
+
+            log.WriteLine("timestamp|dim(packet)|bit rate");
 
             while(!EndOfStream)
             {
@@ -44,13 +51,29 @@ namespace KalmanLib
 
                 if(now >= next)
                 {
-                    Socket.SendTo(Service.Generate(), LocalEndPoint);
-                    next = now.AddSeconds(Rate);
+                    var bytes = Service.Generate();
+                    Socket.SendTo(bytes, LocalEndPoint);
+                    next = now.AddMilliseconds(Rate);
+
+                    StringBuilder line = new StringBuilder();
+
+                    line.Append(DateTime.Now.ToString("HH:mm:ss"));
+                    line.Append("|");
+                    line.Append(bytes.Length);
+                    line.Append("|");
+                    line.Append(bytes.Length / Rate);
+
+                    // rate = C / T => C = rate * T
+
+                    log.WriteLine(line.ToString());
                 }
 
                 if (now >= end)
                     EndOfStream = true;
             }
+
+            log.Close();
+            log.Dispose();
         }
     }
 }
