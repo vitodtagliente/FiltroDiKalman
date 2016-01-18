@@ -1,6 +1,5 @@
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\DateTimeParser.exe.config
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\DateTimeParser.exe
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Release\DateTimeParser.pdb
-D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\DateTimeParser\obj\Release\DateTimeParser.csprojResolveAssemblyReference.cache
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\DateTimeParser\obj\Release\DateTimeParser.exe
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\DateTimeParser\obj\Release\DateTimeParser.pdb
