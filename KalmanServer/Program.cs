@@ -65,9 +65,13 @@ namespace KalmanServer
 
                 Console.WriteLine(string.Empty);
 
-                Console.WriteLine("Received packet from {0} on {1}", endPoint.ToString(), DateTime.Now.TimeOfDay.ToString());
+                Console.WriteLine("Received packet from {0} on {1} = {2} milliseconds", 
+                    endPoint.ToString(), 
+                    DateTime.Now.TimeOfDay,
+                    DateTime.Now.TimeOfDay.TotalMilliseconds);
 
                 filter.NextStep(bytes);
+                LogLine(string.Format("C: {0}", filter.C), ConsoleColor.Yellow);
                 LogLine("Estimated link capacity: " + ((filter.C * 8000) / Math.Pow(2, 30)) + "Gbps", ConsoleColor.Yellow);
             }
         }        

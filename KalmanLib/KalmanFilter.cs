@@ -74,6 +74,7 @@ namespace KalmanLib
             string packet = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
 
             double timeInPacket = 0;
+            /*
             try
             {
                 timeInPacket = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
@@ -83,6 +84,9 @@ namespace KalmanLib
                 Console.WriteLine(String.Format("Encoding error {0}", packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length)));
                 return;
             }
+            */
+            timeInPacket = BitConverter.ToDouble(bytes, 0);
+            Console.WriteLine(String.Format("Send timespan: {0}", timeInPacket));
 
             if (firstStep)
             {
@@ -119,6 +123,7 @@ namespace KalmanLib
             double DeltaTplus1 = DateTime.Now.TimeOfDay.TotalMilliseconds - lastPacketReceivedTime;
 
             dm = DeltaTplus1 - Deltatplus1;
+            Console.WriteLine(String.Format("dm = {0}", dm));
 
             // Aggiornamento di P = P + Q
             P = AddMatrix(P, Q);

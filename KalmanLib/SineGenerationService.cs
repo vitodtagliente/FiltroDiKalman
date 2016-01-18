@@ -41,7 +41,11 @@ namespace KalmanLib
             List<byte> buffer = new List<byte>();
             // Ora di invio nel formato HH:mm:ss.fff
             //buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.TimeOfDay.ToString()));
-            buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.TimeOfDay.TotalMilliseconds.ToString()));
+            double millisecs = DateTime.Now.TimeOfDay.TotalMilliseconds;
+            //buffer.AddRange(Encoding.ASCII.GetBytes(millisecs.ToString()));
+            //double millisecs = DateTime.Now.TimeOfDay.TotalSeconds;
+            buffer.AddRange(BitConverter.GetBytes(millisecs));
+            Console.WriteLine(String.Format("Send on {0}", millisecs));
             // Accodamento dei byte casuali
             Random random = new Random();
             int size = Sine();
