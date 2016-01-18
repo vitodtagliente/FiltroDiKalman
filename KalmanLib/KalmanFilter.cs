@@ -1,11 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using LinearAlgebra;
-using LinearAlgebra.Matricies;
 
 namespace KalmanLib
 {
@@ -14,8 +9,10 @@ namespace KalmanLib
         public static string Filename = "server.log.txt";
 
         // Cofigurazioni iniziali del filtro definite dalla traccia
-        public DoubleMatrix P = new DoubleMatrix(new double[,] { { 1000, 0 }, { 0, Math.Pow(10, -1) } });
-        public DoubleMatrix Q = new DoubleMatrix(new double[,] { { Math.Pow(10, -10), 0 }, { 0, Math.Pow(10, -3) } });
+        //public DoubleMatrix P = new DoubleMatrix(new double[,] { { 1000, 0 }, { 0, Math.Pow(10, -1) } });
+        //public DoubleMatrix Q = new DoubleMatrix(new double[,] { { Math.Pow(10, -10), 0 }, { 0, Math.Pow(10, -3) } });
+        public double[,] P = new double[2, 2];
+        public double[,] Q = new double[2, 2];
 
         // Rumore di misura
         public double sigma = 50;
@@ -40,8 +37,8 @@ namespace KalmanLib
 
         // last packet size
         int lastPacketSize = 0;
-        DateTime lastPacketReceivedTime;
-        DateTime lastPacketSendTime;
+        double lastPacketReceivedTime;
+        double lastPacketSendTime;
 
         bool firstStep = true;
 
@@ -50,10 +47,22 @@ namespace KalmanLib
             DeltaL = 0;
             dm = 0;
             m = 0;
-            InverseC = 0;
             lastPacketSize = 0;
 
-            InverseC = 1 / C;
+            InverseC = Math.Pow(C, -1);
+
+            // Inizializza le matrici
+            P[0, 0] = 1000;
+            P[0, 1] = 0;
+            P[1, 0] = 0;
+            P[1, 1] = Math.Pow(10, -1);
+
+            Q[0, 0] = Math.Pow(10, -10);
+            Q[0, 1] = 0;
+            Q[1, 0] = 0;
+            Q[1, 1] = Math.Pow(10, -3);
+
+            // Crea il file di log
 
             StreamWriter wr = new StreamWriter(Filename);
             wr.Close();
@@ -67,146 +76,148 @@ namespace KalmanLib
             if (firstStep)
             {
                 // first step
-                lastPacketReceivedTime = DateTime.Now;
-                lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
-                lastPacketSize = bytes.Length;
+                //lastPacketReceivedTime = DateTime.Now;
+                //lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
+                lastPacketReceivedTime = DateTime.Now.TimeOfDay.TotalMilliseconds;
+                lastPacketSendTime = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
 
-                FileLogLine("timestamp|dim(packet)|DeltaL|dm|K|P|sigma|m|C");
+                lastPacketSize = bytes.Length;
+                
+                // CSV: timestamp(millisecondi), DeltaL, dm, K[0,0], K[0,1], P[0,0] , P[0,1], P[1,0], P[1,1], sigma, m, C
 
                 firstStep = false;
                 return;
             }
-
+            
             // Calcolo la variazione DeltaL(i+1) = L(i+1) - L(i)
-            DeltaL = bytes.Length - lastPacketSize;
-            Log("DeltaL(i+1) = L(i+1) - L(i) = " + bytes.Length + " - " + lastPacketSize + " = ", ConsoleColor.Magenta);
-            LogLine(DeltaL.ToString(), ConsoleColor.White);
+            DeltaL = bytes.Length - lastPacketSize;            
 
             // Calcolo della variazione One Way Delay Variation
             // dm(i+1) = (T(i+1)-T(i)) - (t(i+1) - t(i))
             // Delta tempo di arrivo - Delta tempo di invio
 
             // determina t(i+1)
-            var tiplus1 = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
-            
-            double Deltatplus1 = tiplus1.Subtract(lastPacketSendTime).TotalMilliseconds;
-            Log("(t(i+1) - t(i)) = (" + tiplus1.TimeOfDay.ToString() + " - " + lastPacketSendTime.TimeOfDay.ToString() + ") = ", ConsoleColor.Magenta);
-            LogLine(Deltatplus1.ToString(), ConsoleColor.White);
+            //var tiplus1 = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
+            double tiplus1 = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
 
-            double DeltaTplus1 = DateTime.Now.Subtract(lastPacketReceivedTime).TotalMilliseconds;
-            Log("(T(i+1) - T(i)) = (" + DateTime.Now.TimeOfDay.ToString() + " - " + lastPacketReceivedTime.TimeOfDay.ToString() + ") = ", ConsoleColor.Magenta);
-            LogLine(DeltaTplus1.ToString(), ConsoleColor.White);
+            //double Deltatplus1 = tiplus1.Subtract(lastPacketSendTime).TotalMilliseconds;
+            double Deltatplus1 = tiplus1 - lastPacketSendTime;
+
+            //double DeltaTplus1 = DateTime.Now.Subtract(lastPacketReceivedTime).TotalMilliseconds;
+            double DeltaTplus1 = DateTime.Now.TimeOfDay.TotalMilliseconds - lastPacketReceivedTime;
 
             dm = DeltaTplus1 - Deltatplus1;
-            Log("dm = DeltaT(i+1) - Deltat(i+1) = ", ConsoleColor.Magenta);
-            LogLine(dm.ToString(), ConsoleColor.White);
 
             // Aggiornamento di P = P + Q
-            P = P + Q;
+            P = AddMatrix(P, Q);
             // H = [Delta L 1]
-            DoubleMatrix H = new DoubleMatrix(new double[,] { { DeltaL, 1 } });
+            double[,] H = new double[1, 2];
+            H[0, 0] = DeltaL;
+            H[0, 1] = 1;
             // PH = P * H' (prodotto tra matrici)
-            var PH = P * H.Transposed;
+            double[,] Ht = new double[2, 1];
+            Ht[0, 0] = H[0, 0];
+            Ht[1, 0] = H[0, 1];
+
+            var PH = MulMatrix(P, Ht);
             // residuo = dm - 1/C*H(0) - m
             double residuo = dm - InverseC * H[0, 0] - m;
             // sigma = β * sigma + (1 − β)*residuo ^ 2(β = 0, 95)
             sigma = beta * sigma + (1 - beta) * (Math.Pow(residuo, 2));
             // denominatore = sigma + H(0)*PH(0)+ H(1)*PH(1)
-            var denominatore = sigma + H[0, 0] * PH[0, 0] + H[1, 0] * PH[0, 1];
+            var denominatore = sigma + H[0, 0] * PH[0, 0] + H[0, 1] * PH[1, 0];
             // K = [ PH(0)/ denominatore; PH(1)/ denominatore] (kalman gain) (vettore 2x1)
-            var K = (PH / denominatore);
+            double[,] K = new double[2, 1];
+            K[0, 0] = PH[0, 0] / denominatore;
+            K[1, 0] = PH[1, 0] / denominatore;
             // IKH = [ 1.0 - K(0)*H(0), -K(0)*H(1); -K(1)*H(0), 1.0 - K(1)*H(1) ] (matrice 2x2)
-            var IKH = new DoubleMatrix(new double[,] {
-                { 1.0 - K[0, 0] * H[0, 0], -K[0, 0] * H[1, 0] },
-                { -K[0, 1] * H[0, 0], 1.0 - K[0, 1] * H[1, 0] }
-            });
+            double[,] IKH = new double[2, 2];
+            IKH[0, 0] = 1.0 - (K[0, 0] * H[0, 0]);
+            IKH[0, 1] = -K[0, 0] * H[0, 1];
+            IKH[1, 0] = -K[1, 0] * H[0, 0];
+            IKH[1, 1] = 1.0 - (K[1, 0] * H[0, 1]);
             // P = IKH * P (prodotto tra matrici)
-            P = IKH * P;
+            P = MulMatrix(IKH, P);
             // m = m + K(1) * residuo (nuova stima di m da loggare)
-            m = m + K[0, 1] * residuo;
+            m = m + (K[1, 0] * residuo);
             // 1/C = 1/C + K(0) * residuo (nuova stima di C da loggare)
-            InverseC = InverseC + K[0, 0] * residuo;
+            InverseC = InverseC + (K[0, 0] * residuo);
+            C = Math.Pow(InverseC, -1);
 
             // aggiornamento dei dati del filtro
-            lastPacketReceivedTime = DateTime.Now;
+            //lastPacketReceivedTime = DateTime.Now;
+            lastPacketReceivedTime = DateTime.Now.TimeOfDay.TotalMilliseconds;
             lastPacketSendTime = tiplus1;
             lastPacketSize = bytes.Length;
 
             // Log su file
             StringBuilder line = new StringBuilder();
 
-            line.Append(DateTime.Now.ToString("HH:mm:ss"));
-            line.Append("|\t");
-            line.Append(bytes.Length);
-            line.Append("|\t");
+            line.Append(DateTime.Now.TimeOfDay.ToString());
+            line.Append(" , ");
             line.Append(DeltaL);
-            line.Append("|\t");
+            line.Append(" , ");
             line.Append(dm);
-            line.Append("|\t");
+            line.Append(" , ");
             line.Append(K[0, 0]);
-            line.Append(" ");
-            line.Append(K[0, 1]);
-            line.Append("|\t");
+            line.Append(" , ");
+            line.Append(K[1, 0]);
+            line.Append(" , ");
             line.Append(P[0, 0]);
-            line.Append(" ");
-            line.Append(P[1, 0]);
-            line.Append(" ");
+            line.Append(" , ");
             line.Append(P[0, 1]);
-            line.Append(" ");
+            line.Append(" , ");
+            line.Append(P[1, 0]);
+            line.Append(" , ");
             line.Append(P[1, 1]);
-            line.Append("|\t");
+            line.Append(" , ");
             line.Append(sigma);
-            line.Append("|\t");
+            line.Append(" , ");
             line.Append(m);
-            line.Append("|\t");
-            line.Append(Math.Pow(InverseC, -1));
+            line.Append(" , ");
+            line.Append(C);
 
-            FileLogLine(line.ToString());
+            LogLine(line.ToString());
+        }
+
+        double[,] MulMatrix(double[,] A, double[,] B)
+        {
+            double[,] result = new double[A.GetLength(0), B.GetLength(1)];
+            for (int i = 0; i < A.GetLength(0); i++)
+            {
+                for (int j = 0; j < B.GetLength(1); j++)
+                {
+                    result[i, j] = 0;
+                    for (int k = 0; k < A.GetLength(1); k++)
+                    {
+                        result[i, j] = result[i, j] + A[i, k] * B[k, j];
+                    }
+                }
+            }
+            return result;
+        }
+
+        double[,] AddMatrix(double[,] A, double[,] B)
+        {
+            double[,] result = new double[A.GetLength(0), A.GetLength(1)];
+            for (int i = 0; i < A.GetLength(0); i++)
+            {
+                for (int j = 0; j < A.GetLength(1); j++)
+                {
+                    result[i, j] = A[i, j] + B[i, j];
+                }
+            }
+            return result;
         }
         
-        public void LogResults(ConsoleColor color)
-        {
-            LogLine(string.Empty);
-            Log("Estimated m = ", ConsoleColor.Yellow);
-            LogLine(m.ToString(), ConsoleColor.White);
-            Log("Estimated 1/C = ", ConsoleColor.Yellow);
-            LogLine(InverseC.ToString(), ConsoleColor.White);
-            LogLine(string.Empty);
-            Log("Enstimated C = ", ConsoleColor.Cyan);
-            LogLine(Math.Pow(InverseC, -1).ToString(), ConsoleColor.White);
-        }
-        
-        void Log(string text, ConsoleColor color)
-        {
-            var startColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.Write(text);
-            Console.ForegroundColor = startColor;
-
-        }
-
-        void LogLine(string text, ConsoleColor color)
-        {
-            var startColor = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.WriteLine(text);
-            Console.ForegroundColor = startColor;
-
-        }
-
-        void LogLine(string text)
-        {
-            Console.WriteLine(text);
-        }
-
-        void FileLog(string text)
+        void Log(string text)
         {
             StreamWriter wr = new StreamWriter(Filename, true);
             wr.Write(text);
             wr.Close();
             wr.Dispose();
         }
-        void FileLogLine(string text)
+        void LogLine(string text)
         {
             StreamWriter wr = new StreamWriter(Filename, true);
             wr.WriteLine(text);

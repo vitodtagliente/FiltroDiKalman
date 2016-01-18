@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace KalmanLib
 {
@@ -43,9 +40,7 @@ namespace KalmanLib
 
             var next = now.AddMilliseconds(Rate);
 
-            log.WriteLine("timestamp|dim(packet)|bit rate");
-
-            while(!EndOfStream)
+            while (!EndOfStream)
             {
                 now = DateTime.Now;
 
@@ -53,19 +48,21 @@ namespace KalmanLib
                 {
                     var bytes = Service.Generate();
                     Socket.SendTo(bytes, LocalEndPoint);
-                    next = now.AddMilliseconds(Rate);
 
+                    next = now.AddMilliseconds(Rate);
+                    
+                    // Log CSV
+                    // Timestamp(in millisecondi) , bitrare (bytes/millisecondi)
                     StringBuilder line = new StringBuilder();
 
-                    line.Append(DateTime.Now.ToString("HH:mm:ss"));
-                    line.Append("|");
-                    line.Append(bytes.Length);
-                    line.Append("|");
-                    line.Append(bytes.Length / Rate);
+                    line.Append(DateTime.Now.TimeOfDay.TotalMilliseconds);
+                    line.Append(" , ");
+                    line.Append((bytes.Length / (double)Rate).ToString());
 
-                    // rate = C / T => C = rate * T
+                    // bitrate = L / Rate
 
                     log.WriteLine(line.ToString());
+                    // Aggiornamento del file di log
                 }
 
                 if (now >= end)

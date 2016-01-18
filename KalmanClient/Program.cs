@@ -1,8 +1,6 @@
 ﻿using System;
-using System.IO;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using KalmanLib;
 
 namespace KalmanClient
@@ -89,7 +87,7 @@ namespace KalmanClient
             else delay = 1000;
 
             int amplitude = 32;
-            Log("Amplitude [default 32 bit]: ", ConsoleColor.DarkGreen);
+            Log("Amplitude [default 32 bytes]: ", ConsoleColor.DarkGreen);
             string _amplitude = Console.ReadLine();
             if (!string.IsNullOrEmpty(_amplitude))
             {

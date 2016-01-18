@@ -1,13 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace KalmanLib
 {
     public class SineGenerationService : PacketGenerationService
     {
+        // Dimensione massima in byte del pacchetto
         public int Amplitude { get; private set; }
         public int Phase { get; private set; }
         public float AngularFrequency { get; private set; }
@@ -40,7 +39,10 @@ namespace KalmanLib
         public override byte[] Generate()
         {
             List<byte> buffer = new List<byte>();
-            buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.TimeOfDay.ToString()));
+            // Ora di invio nel formato HH:mm:ss.fff
+            //buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.TimeOfDay.ToString()));
+            buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.TimeOfDay.TotalMilliseconds.ToString()));
+            // Accodamento dei byte casuali
             Random random = new Random();
             int size = Sine();
             if (size < 0) size *= -1;

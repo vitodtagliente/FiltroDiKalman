@@ -3,9 +3,6 @@ using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using KalmanLib;
-using LinearAlgebra;
-using LinearAlgebra.Matricies;
-using System.Threading;
 
 namespace KalmanServer
 {
@@ -14,15 +11,7 @@ namespace KalmanServer
         static ConsoleColor defaultColor;
 
         static readonly int DefaultPort = 55655;
-
-        public static bool running = false;
-
-        static KalmanFilter filter;
-
-        static IPEndPoint endPoint;
-
-        static UdpClient server;
-
+        
         static void Main(string[] args)
         {
             Console.Title = "Kalman Server";
@@ -45,17 +34,17 @@ namespace KalmanServer
                 catch (Exception e)
                 {
                     LogLine("Invalid format, port must be an integer number!", ConsoleColor.DarkRed);
-                    throw new Exception(e.ToString());
+                    return;
                 }
             }
             else port = DefaultPort;
 
             Console.WriteLine(string.Empty);
 
-            server = new UdpClient(port);
-            endPoint = new IPEndPoint(IPAddress.Any, port);
+            UdpClient server = new UdpClient(port);
+            IPEndPoint endPoint = new IPEndPoint(IPAddress.Any, port);
                        
-            filter = new KalmanFilter();
+            KalmanFilter filter = new KalmanFilter();
 
             Log("Bandwidth C [default " + filter.C.ToString() + " kbps]: ", ConsoleColor.Green);
             string _cCanale = Console.ReadLine();
@@ -67,23 +56,14 @@ namespace KalmanServer
             LogLine(string.Empty);
             LogLine("Kalman Filter settings at time t=0", ConsoleColor.DarkGreen);
             LogLine(string.Empty);
-            LogLine("  P: ", ConsoleColor.DarkGreen);
-            LogLine(filter.P.ToString(), ConsoleColor.White);
-            LogLine("  Q: ", ConsoleColor.DarkGreen);
-            LogLine(filter.Q.ToString(), ConsoleColor.White);
-            Log("  m (one way delay variation): ", ConsoleColor.DarkGreen);
+            Log("m (one way delay variation): ", ConsoleColor.DarkGreen);
             LogLine(filter.m.ToString(), ConsoleColor.White);
-            Log("  sigma (measurement error): ", ConsoleColor.DarkGreen);
+            Log("sigma (measurement error): ", ConsoleColor.DarkGreen);
             LogLine(filter.sigma.ToString(), ConsoleColor.White);
 
             LogLine(string.Empty);
             LogLine("Listening...", ConsoleColor.Cyan);
             LogLine(string.Empty);
-            /*
-            DoubleMatrix H = new DoubleMatrix(new double[,] { { 56, 1 } });
-            LogLine(H.ToString(), ConsoleColor.Red);
-            LogLine(H[0, 0].ToString(), ConsoleColor.Red);
-            */
             
             while(true)
             {
@@ -93,12 +73,10 @@ namespace KalmanServer
 
                 Console.WriteLine(string.Empty);
 
-                Console.WriteLine("Received packet from {0} : {1}",
-                    endPoint.ToString(),
-                    packet);
+                Console.WriteLine("Received packet from {0} on {1}", endPoint.ToString(), DateTime.Now.TimeOfDay.ToString());
 
                 filter.NextStep(bytes);
-                filter.LogResults(ConsoleColor.Yellow);
+                LogLine("Estimated link capacity: " + ((filter.C * 8000) / Math.Pow(2, 30)) + "Gbps", ConsoleColor.Yellow);
             }
         }        
                 

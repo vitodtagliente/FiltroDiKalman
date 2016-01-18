@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KalmanServer", "KalmanServe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "KalmanLib", "KalmanLib\KalmanLib.csproj", "{8FD48084-5F9A-48DF-9060-C05816D8DB53}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DateTimeParser", "DateTimeParser\DateTimeParser.csproj", "{BC68A377-62F2-4698-94A4-3E86642D1EDF}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{8FD48084-5F9A-48DF-9060-C05816D8DB53}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8FD48084-5F9A-48DF-9060-C05816D8DB53}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8FD48084-5F9A-48DF-9060-C05816D8DB53}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BC68A377-62F2-4698-94A4-3E86642D1EDF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BC68A377-62F2-4698-94A4-3E86642D1EDF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BC68A377-62F2-4698-94A4-3E86642D1EDF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BC68A377-62F2-4698-94A4-3E86642D1EDF}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
