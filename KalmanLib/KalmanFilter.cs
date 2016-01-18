@@ -73,13 +73,25 @@ namespace KalmanLib
         {
             string packet = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
 
+            double timeInPacket = 0;
+            try
+            {
+                timeInPacket = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
+            }
+            catch(Exception)
+            {
+                Console.WriteLine(String.Format("Encoding error {0}", packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length)));
+                return;
+            }
+
             if (firstStep)
             {
                 // first step
                 //lastPacketReceivedTime = DateTime.Now;
                 //lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
                 lastPacketReceivedTime = DateTime.Now.TimeOfDay.TotalMilliseconds;
-                lastPacketSendTime = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
+                //lastPacketSendTime = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
+                lastPacketSendTime = timeInPacket;
 
                 lastPacketSize = bytes.Length;
                 
@@ -90,7 +102,7 @@ namespace KalmanLib
             }
             
             // Calcolo la variazione DeltaL(i+1) = L(i+1) - L(i)
-            DeltaL = bytes.Length - lastPacketSize;            
+            DeltaL = bytes.Length - lastPacketSize;
 
             // Calcolo della variazione One Way Delay Variation
             // dm(i+1) = (T(i+1)-T(i)) - (t(i+1) - t(i))
@@ -98,7 +110,7 @@ namespace KalmanLib
 
             // determina t(i+1)
             //var tiplus1 = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
-            double tiplus1 = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
+            double tiplus1 = timeInPacket;
 
             //double Deltatplus1 = tiplus1.Subtract(lastPacketSendTime).TotalMilliseconds;
             double Deltatplus1 = tiplus1 - lastPacketSendTime;

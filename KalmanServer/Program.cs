@@ -52,15 +52,7 @@ namespace KalmanServer
             {
                 filter.C = float.Parse(_cCanale);
             }
-
-            LogLine(string.Empty);
-            LogLine("Kalman Filter settings at time t=0", ConsoleColor.DarkGreen);
-            LogLine(string.Empty);
-            Log("m (one way delay variation): ", ConsoleColor.DarkGreen);
-            LogLine(filter.m.ToString(), ConsoleColor.White);
-            Log("sigma (measurement error): ", ConsoleColor.DarkGreen);
-            LogLine(filter.sigma.ToString(), ConsoleColor.White);
-
+           
             LogLine(string.Empty);
             LogLine("Listening...", ConsoleColor.Cyan);
             LogLine(string.Empty);
