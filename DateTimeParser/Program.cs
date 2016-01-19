@@ -18,12 +18,39 @@ namespace DateTimeParser
 
             StringBuilder lines = new StringBuilder();
 
+            bool toMillisecs = false;
+            bool toSeconds = false;
+
+            Console.WriteLine("To Milliseconds? [default no]: ");
+            string value = Console.ReadLine();
+            if(string.IsNullOrEmpty(value) == false)
+            {
+                toMillisecs = (value.ToLower() == "yes");
+            }
+            Console.WriteLine("To Seconds? [default no]: ");
+            value = Console.ReadLine();
+            if (string.IsNullOrEmpty(value) == false)
+            {
+                toSeconds = (value.ToLower() == "yes");
+            }
+
             StreamReader rd = new StreamReader(filename);
             while(rd.EndOfStream == false)
             {
                 string line = rd.ReadLine();
-                string date = line.Substring(0, DateTime.Now.ToString("HH:mm:ss.fff").Length);
-                line = line.Replace(date, DateTime.Parse(date).TimeOfDay.TotalMilliseconds.ToString());
+                var pieces = line.Split(',');
+                var first_piece = pieces[0].Trim();
+
+                if (toMillisecs)
+                {
+                    var date = DateTime.Parse(first_piece);
+                    line = line.Replace(first_piece, date.TimeOfDay.TotalMilliseconds.ToString());
+                }
+                else if(toSeconds)
+                {
+                    var date = TimeSpan.FromMilliseconds(double.Parse(first_piece));
+                    line = line.Replace(first_piece, date.Seconds.ToString());
+                }
                 lines.AppendLine(line);
             }
             rd.Close();
