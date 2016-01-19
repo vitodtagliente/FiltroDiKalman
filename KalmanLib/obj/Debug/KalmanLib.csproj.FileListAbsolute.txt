@@ -4,4 +4,3 @@ D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\D
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\bin\Debug\KalmanLib.pdb
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanLib\obj\Debug\KalmanLib.dll
 D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanLib\obj\Debug\KalmanLib.pdb
-D:\Documents\Poliba\Magistrale\Metodi di controllo\Progetto\FiltroDiKalman\KalmanLib\obj\Debug\KalmanLib.csprojResolveAssemblyReference.cache

@@ -51,18 +51,18 @@ namespace KalmanLib
 
                     next = now.AddMilliseconds(Rate);
                     
-                    // Log CSV
+                    // Log su file CSV
                     // Timestamp(in millisecondi) , bitrare (bytes/millisecondi)
+
                     StringBuilder line = new StringBuilder();
 
-                    line.Append(DateTime.Now.TimeOfDay.TotalMilliseconds);
+                    line.Append(BitConverter.ToDouble(bytes, 0));
                     line.Append(" , ");
                     line.Append((bytes.Length / (double)Rate).ToString());
 
                     // bitrate = L / Rate
 
                     log.WriteLine(line.ToString());
-                    // Aggiornamento del file di log
                 }
 
                 if (now >= end)

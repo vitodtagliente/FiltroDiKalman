@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace KalmanLib
 {
@@ -9,29 +8,24 @@ namespace KalmanLib
         // Dimensione massima in byte del pacchetto
         public int Amplitude { get; private set; }
         public int Phase { get; private set; }
-        public float AngularFrequency { get; private set; }
-
-        int time;
-
+        public double AngularFrequency { get; private set; }
+        
         public SineGenerationService(int amplitude = 32)
-            : this(amplitude, 1f, 0)
+            : this(amplitude, Math.PI / 2, 0)
         {
 
         }
 
-        public SineGenerationService(int amplitude, float angularFrequency, int phase)
+        public SineGenerationService(int amplitude, double angularFrequency, int phase)
         {
             Amplitude = amplitude;
             AngularFrequency = angularFrequency;
             Phase = phase;
-            time = 0;
         }
 
         int Sine()
         {
-            var now = DateTime.Now;
-            time += now.Second; 
-            var sine = Amplitude * Math.Sin(AngularFrequency * time + Phase);
+            var sine = Amplitude + (Amplitude / 10) * Math.Sin(AngularFrequency * DateTime.Now.TimeOfDay.TotalSeconds + Phase);
 
             return Convert.ToInt32(sine);
         }
@@ -39,18 +33,16 @@ namespace KalmanLib
         public override byte[] Generate()
         {
             List<byte> buffer = new List<byte>();
-            // Ora di invio nel formato HH:mm:ss.fff
-            //buffer.AddRange(Encoding.ASCII.GetBytes(DateTime.Now.TimeOfDay.ToString()));
+            // Accodamento dell'orario di invio in millisecondi
             double millisecs = DateTime.Now.TimeOfDay.TotalMilliseconds;
-            //buffer.AddRange(Encoding.ASCII.GetBytes(millisecs.ToString()));
-            //double millisecs = DateTime.Now.TimeOfDay.TotalSeconds;
             buffer.AddRange(BitConverter.GetBytes(millisecs));
             Console.WriteLine(String.Format("Send on {0}", millisecs));
             // Accodamento dei byte casuali
             Random random = new Random();
             int size = Sine();
+            Console.WriteLine(String.Format("Packet size: {0}", size));
             if (size < 0) size *= -1;
-            Byte[] b = new Byte[size];
+            byte[] b = new byte[size];
             random.NextBytes(b);
             buffer.AddRange(b);
             return buffer.ToArray();

@@ -74,33 +74,17 @@ namespace KalmanLib
             string packet = Encoding.ASCII.GetString(bytes, 0, bytes.Length);
 
             double timeInPacket = 0;
-            /*
-            try
-            {
-                timeInPacket = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
-            }
-            catch(Exception)
-            {
-                Console.WriteLine(String.Format("Encoding error {0}", packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length)));
-                return;
-            }
-            */
             timeInPacket = BitConverter.ToDouble(bytes, 0);
             Console.WriteLine(String.Format("Send timespan: {0}", timeInPacket));
 
             if (firstStep)
             {
                 // first step
-                //lastPacketReceivedTime = DateTime.Now;
-                //lastPacketSendTime = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
                 lastPacketReceivedTime = DateTime.Now.TimeOfDay.TotalMilliseconds;
-                //lastPacketSendTime = double.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.TotalMilliseconds.ToString().Length));
                 lastPacketSendTime = timeInPacket;
 
                 lastPacketSize = bytes.Length;
                 
-                // CSV: timestamp(millisecondi), DeltaL, dm, K[0,0], K[0,1], P[0,0] , P[0,1], P[1,0], P[1,1], sigma, m, C
-
                 firstStep = false;
                 return;
             }
@@ -113,14 +97,11 @@ namespace KalmanLib
             // Delta tempo di arrivo - Delta tempo di invio
 
             // determina t(i+1)
-            //var tiplus1 = DateTime.Parse(packet.Substring(0, DateTime.Now.TimeOfDay.ToString().Length));
-            double tiplus1 = timeInPacket;
-
-            //double Deltatplus1 = tiplus1.Subtract(lastPacketSendTime).TotalMilliseconds;
+            double tiplus1 = timeInPacket;            
             double Deltatplus1 = tiplus1 - lastPacketSendTime;
 
-            //double DeltaTplus1 = DateTime.Now.Subtract(lastPacketReceivedTime).TotalMilliseconds;
-            double DeltaTplus1 = DateTime.Now.TimeOfDay.TotalMilliseconds - lastPacketReceivedTime;
+            double Tiplus1 = DateTime.Now.TimeOfDay.TotalMilliseconds;
+            double DeltaTplus1 = Tiplus1 - lastPacketReceivedTime;
 
             dm = DeltaTplus1 - Deltatplus1;
             Console.WriteLine(String.Format("dm = {0}", dm));
@@ -138,7 +119,7 @@ namespace KalmanLib
 
             var PH = MulMatrix(P, Ht);
             // residuo = dm - 1/C*H(0) - m
-            double residuo = dm - InverseC * H[0, 0] - m;
+            double residuo = dm - (InverseC * H[0, 0]) - m;
             // sigma = β * sigma + (1 − β)*residuo ^ 2(β = 0, 95)
             sigma = beta * sigma + (1 - beta) * (Math.Pow(residuo, 2));
             // denominatore = sigma + H(0)*PH(0)+ H(1)*PH(1)
@@ -161,16 +142,18 @@ namespace KalmanLib
             InverseC = InverseC + (K[0, 0] * residuo);
             C = Math.Pow(InverseC, -1);
 
-            // aggiornamento dei dati del filtro
-            //lastPacketReceivedTime = DateTime.Now;
-            lastPacketReceivedTime = DateTime.Now.TimeOfDay.TotalMilliseconds;
+            // Aggiornamento dei dati del filtro
+            lastPacketReceivedTime = Tiplus1;
             lastPacketSendTime = tiplus1;
             lastPacketSize = bytes.Length;
 
             // Log su file
+
+            // CSV: timestamp(millisecondi), DeltaL, dm, K[0,0], K[0,1], P[0,0] , P[0,1], P[1,0], P[1,1], sigma, m, C
+
             StringBuilder line = new StringBuilder();
 
-            line.Append(DateTime.Now.TimeOfDay.ToString());
+            line.Append(Tiplus1);
             line.Append(" , ");
             line.Append(DeltaL);
             line.Append(" , ");
