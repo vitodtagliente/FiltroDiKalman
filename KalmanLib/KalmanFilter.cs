@@ -60,7 +60,7 @@ namespace KalmanLib
             Q[0, 0] = Math.Pow(10, -10);
             Q[0, 1] = 0;
             Q[1, 0] = 0;
-            Q[1, 1] = Math.Pow(10, -3);
+            Q[1, 1] = Math.Pow(10, -1); // Math.Pow(10, -3)
 
             // Crea il file di log
 

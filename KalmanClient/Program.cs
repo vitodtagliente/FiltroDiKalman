@@ -94,8 +94,20 @@ namespace KalmanClient
                 amplitude = int.Parse(_amplitude);
             }
 
-            PacketGenerationService sineService = new SineGenerationService(amplitude);
-            StressSendService sendService = new StressSendService(s, endPoint, sineService);
+            //PacketGenerationService service;
+            //service = new SineGenerationService(amplitude);
+            ValueGenerationService service = new ValueGenerationService();
+            service.Sizes.Add(500);
+            service.Sizes.Add(1000);
+            service.Sizes.Add(2000);
+            service.Sizes.Add(4000);
+            service.Sizes.Add(8000);
+            service.Sizes.Add(10000);
+            service.Sizes.Add(8000);
+            service.Sizes.Add(4000);
+            service.Sizes.Add(2000);
+            service.Sizes.Add(1000);
+            StressSendService sendService = new StressSendService(s, endPoint, service);
 
             Console.WriteLine(string.Empty);
             LogLine("Sending data...", ConsoleColor.DarkCyan);
